@@ -239,54 +239,7 @@
             text-align: center;
             margin-top: 30px;
         }
-        
-        .chart-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            font-size: 0.95em;
-        }
-
-        .chart-label {
-            flex: 1 0 100px; /* 基礎寬度100px，可增長但不可收縮 */
-            text-align: right;
-            padding-right: 10px;
-            color: var(--dark-gray);
-            /* --- 以下是關鍵修正 --- */
-            white-space: normal; /* 允許文字自動換行 */
-            word-break: break-word; /* 處理過長的單字 */
-        }
-
-        .chart-bar-wrapper {
-            flex: 2 1 0; /* 佔據剩餘空間，比例約為標籤的兩倍 */
-            background-color: #e9ecef;
-            border-radius: 4px;
-            position: relative;
-            height: 22px;
-        }
-
-        .chart-bar {
-            height: 100%;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            color: white;
-            font-size: 0.85em;
-            font-weight: bold;
-            overflow: hidden;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            transition: width 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        
-        .chart-bar span {
-            padding: 0 6px;
-        }
-
-        .result-style:nth-child(2) .chart-bar { background-color: var(--adaptive-color); }
-        .result-style:nth-child(3) .chart-bar { background-color: var(--affect-regulating-color); }
-        .result-style:nth-child(4) .chart-bar { background-color: var(--image-distorting-color); }
-        
+                
         /* Modal Styles */
         .modal {
             display: none;
@@ -580,12 +533,37 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
+                    indexAxis: 'y', // 保持為水平長條圖
                     scales: {
                         x: {
                             beginAtZero: true,
                             max: 7
+                        },
+                        // --- MODIFICATION START: 新增 Y 軸標籤設定 ---
+                        y: {
+                            ticks: {
+                                // autoSkip: false, // 確保所有標籤都顯示
+                                // callback 用於自訂標籤的顯示方式
+                                callback: function(value, index, ticks) {
+                                    // this.getLabelForValue(value) 取得原始標籤文字
+                                    const label = this.getLabelForValue(value);
+                                    const maxLength = 5; // 設定每行最大字數
+
+                                    // 如果標籤長度超過最大長度，就進行換行處理
+                                    if (label.length > maxLength) {
+                                        const wrappedLabel = [];
+                                        for (let i = 0; i < label.length; i += maxLength) {
+                                            wrappedLabel.push(label.substring(i, i + maxLength));
+                                        }
+                                        // Chart.js 支援用陣列來顯示多行標籤
+                                        return wrappedLabel;
+                                    }
+                                    // 如果標籤不長，直接返回
+                                    return label;
+                                }
+                            }
                         }
+                        // --- MODIFICATION END ---
                     },
                     plugins: {
                         legend: {
@@ -593,7 +571,8 @@
                         }
                     },
                     responsive: true,
-                    maintainAspectRatio: true
+                    // 調整長寬比，給標籤留出更多空間
+                    maintainAspectRatio: false 
                 }
             });
             return charts[canvasId];
