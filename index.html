@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSQ-60 互動問卷 (七點量表版)</title>
@@ -172,7 +174,7 @@
             box-sizing: border-box;
         }
     </style>
-<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.3f7572448765332f3047.js"></script></head>
+</head>
 <body>
 
     <div class="container">
@@ -232,7 +234,7 @@
     <!-- Modal for Explanations -->
     <div id="explanation-modal" class="modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeModal()">×</span>
+            <span class="modal-close" onclick="closeModal()">&times;</span>
             <h3 id="modal-title"></h3>
             <p id="modal-text"></p>
         </div>
@@ -247,7 +249,7 @@
         const questionMapping = { '利他主義': { items: [1, 40], style: 'adaptive' }, '被動攻擊': { items: [2, 37], style: 'imageDistorting' }, '壓抑': { items: [3, 41], style: 'adaptive' }, '昇華': { items: [4, 57], style: 'adaptive' }, '分裂/他人': { items: [5, 36], style: 'imageDistorting' }, '合理化': { items: [6, 26], style: 'affectRegulating' }, '幽默': { items: [7, 42], style: 'adaptive' }, '投射': { items: [8, 46], style: 'imageDistorting' }, '反應形成': { items: [9, 43], style: 'affectRegulating' }, '自我觀察': { items: [10, 45], style: 'adaptive' }, '否認': { items: [11, 28], style: 'imageDistorting' }, '貶低/他人': { items: [12, 17], style: 'imageDistorting' }, '投射性認同': { items: [13, 20], style: 'imageDistorting' }, '解離': { items: [14, 23], style: 'affectRegulating' }, '自我肯定': { items: [15, 50], style: 'adaptive' }, '全能': { items: [16, 24], style: 'imageDistorting' }, '行動化': { items: [18, 31], style: 'imageDistorting' }, '貶低/自我': { items: [19, 35], style: 'imageDistorting' }, '幻想': { items: [21, 27], style: 'affectRegulating' }, '退縮': { items: [22, 33], style: 'affectRegulating' }, '理智化': { items: [25, 55], style: 'affectRegulating' }, '分裂/自我': { items: [29, 44], style: 'imageDistorting' }, '置換': { items: [30, 60], style: 'affectRegulating' }, '潛抑': { items: [32, 39], style: 'affectRegulating' }, '理想化': { items: [34, 38], style: 'imageDistorting' }, '孤立': { items: [51, 56], style: 'affectRegulating' }, '拒絕幫助的抱怨': { items: [48, 54], style: 'imageDistorting' }, '抵消': { items: [49, 59], style: 'affectRegulating' }, '預期': { items: [47, 53], style: 'adaptive' }, '求助': { items: [52, 58], style: 'adaptive' } };
         const defenseExplanations = { '利他主義': '透過幫助他人來處理自己的內心衝突或壓力，從而獲得替代性的滿足感。', '被動攻擊': '以間接、隱蔽的方式表達對他人或情境的攻擊性，例如拖延、固執、故意犯錯等。', '壓抑': '有意識地將不想要的想法、感受或衝動暫時排除在意識之外，以便在更合適的時間處理。', '昇華': '將無法被社會接受的衝動或慾望，轉化為具有建設性、被社會認可的行為，如藝術創作或體育運動。', '分裂/他人': '將他人視為「全好」或「全壞」，無法整合對方優點和缺點，看法在兩個極端間擺盪。', '合理化': '為自己無法接受的行為、動機或感受，製造一個看似合理、合乎邏輯的解釋，以掩蓋真實原因。', '幽默': '以詼諧、有趣的方式看待困境或壓力事件，從而減輕其負面情緒影響。', '投射': '將自己內心無法接受的想法、感受或特質，歸因到他人身上，認為是別人擁有這些特質。', '反應形成': '表現出與內心真實慾望或衝動完全相反的行為，以掩蓋和控制這些不被接受的感受。', '自我觀察': '能夠反思自己的思想、感受、動機和行為，並從中學習和調整。', '否認': '拒絕承認或面對那些令人痛苦的現實、事件或感受，彷彿它們從未發生。', '貶低/他人': '透過誇大或強調他人的負面特質來貶低對方，以提升自尊或應對嫉妒感。', '投射性認同': '不僅將自己的感受投射給他人，還會無意識地引導對方產生相應的感受和行為，從而「證實」自己的投射。', '解離': '在面對巨大壓力或創傷時，暫時性地改變意識、記憶、身份或對環境的知覺，感覺與現實脫節。', '自我肯定': '能夠直接、坦誠地表達自己的需求、感受和權利，同時尊重他人。', '全能': '相信自己擁有超乎常人的能力、權力或重要性，以應對無助感或自卑感。', '行動化': '透過衝動的行為來表達內心的衝突或情緒，而不是用語言來表達或反思。', '貶低/自我': '過度誇大自己的缺點和不足，將自己視為沒有價值，以應對內心的衝突或失敗感。', '幻想': '沉浸在白日夢或想像的世界中，以逃避現實生活中的不滿和挫折。', '退縮': '在面對壓力或衝突時，從社交情境或人際關係中退縮，變得孤立和被動。', '理智化': '過度使用抽象、邏輯和理性的思考方式來處理充滿情感的問題，以避免感受痛苦的情緒。', '分裂/自我': '將對自己的看法分為「全好」和「全壞」兩極，無法形成一個穩定、整合的自我形象。', '置換': '將對某個對象（通常是權威或有威脅性的人物）的強烈情緒，轉移到一個較安全、較不具威脅性的對象上。', '潛抑': '無意識地將痛苦的記憶、想法或衝動排除在意識之外，使其無法被回憶起來。', '理想化': '過度高估某個對象（人或事物）的優點，賦予其完美的特質，以滿足內心的需求或應對失望。', '孤立': '將事件的想法內容與其伴隨的情感分開，能夠回憶起事件本身，但感受不到相關的情緒。', '拒絕幫助的抱怨': '反覆向他人抱怨自己的問題，但又拒絕或貶低他人提供的任何建議或幫助。', '抵消': '試圖透過某種象徵性的行為或想法，來「抵消」或彌補一個已經發生的、無法接受的念頭或行為。', '預期': '在預期到未來可能出現的壓力或不適時，提前進行心理準備和現實規劃，以減輕其衝擊。', '求助': '在面對困難或壓力時，向他人尋求支持、安慰和幫助。' };
         
-        // --- Core Application Logic (Unchanged) ---
+        // --- Core Application Logic ---
         const form = document.getElementById('dsq-form');
         questions.forEach(q => {
             const item = document.createElement('div');
@@ -338,7 +340,7 @@
         function closeModal() { modal.style.display = 'none'; }
         window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
-        // --- UPDATED: PDF Export Logic (with Cover Page fix) ---
+        // --- PDF Export Logic ---
         document.getElementById('export-pdf-btn').addEventListener('click', async () => {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
@@ -348,7 +350,6 @@
             const pdfHeight = pdf.internal.pageSize.getHeight();
             const margin = 40;
 
-            // --- FIX: Render cover page as an image to avoid font issues ---
             const coverPageElement = document.getElementById('pdf-cover-page');
             coverPageElement.innerHTML = `
                 <div style="font-family: sans-serif; font-size: 16px; color: #2c3e50;">
@@ -386,7 +387,7 @@
             pdf.save('DSQ-60_多頁報告.pdf');
         });
 
-        // --- UPDATED: HTML Export Logic (with detailed answers) ---
+        // --- UPDATED: HTML Export Logic (with color-coded rows) ---
         document.getElementById('export-html-btn').addEventListener('click', () => {
             const name = document.getElementById('name').value || '未提供';
             const date = new Date().toLocaleString('zh-TW', { hour12: false });
@@ -399,7 +400,6 @@
             const affectScore = document.getElementById('affect-regulating-style-score').textContent;
             const imageScore = document.getElementById('image-distorting-style-score').textContent;
             
-            // --- NEW: Create a reverse map from question number to defense mechanism ---
             const qNumToDefenseMap = {};
             for (const defenseName in questionMapping) {
                 questionMapping[defenseName].items.forEach(qNum => {
@@ -407,14 +407,24 @@
                 });
             }
 
-            // --- NEW: Generate HTML for the detailed answers table ---
+            // --- NEW: Define colors for table rows based on defense style ---
+            const styleToRowColorMap = {
+                adaptive: 'rgba(46, 204, 113, 0.15)',       // Light Green
+                affectRegulating: 'rgba(52, 152, 219, 0.15)', // Light Blue
+                imageDistorting: 'rgba(231, 76, 60, 0.15)'   // Light Red
+            };
+
+            // --- NEW: Generate HTML for the detailed answers table with color-coding ---
             let answerRowsHtml = '';
             for (let i = 1; i <= questions.length; i++) {
                 const question = questions.find(q => q.qNum === i);
                 const answer = document.querySelector(`input[name="q${i}"]:checked`).value;
                 const defense = qNumToDefenseMap[i];
+                const style = questionMapping[defense].style;
+                const rowColor = styleToRowColorMap[style]; // Get the color for the row
+
                 answerRowsHtml += `
-                    <tr>
+                    <tr style="background-color: ${rowColor};">
                         <td>${question.qNum}</td>
                         <td>${question.text}</td>
                         <td>${defense}</td>
@@ -445,8 +455,10 @@
                         .answers-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
                         .answers-table th, .answers-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
                         .answers-table th { background-color: #f8f9fa; font-weight: bold; }
+                        /* The inline style on <tr> will override this, which is intended */
                         .answers-table tr:nth-child(even) { background-color: #fdfdfd; }
                         .answers-table td:nth-child(1), .answers-table td:nth-child(4) { text-align: center; }
+                        .color-legend span { padding: 2px 6px; border-radius: 4px; font-weight: 500;}
                     </style>
                 </head>
                 <body>
@@ -456,9 +468,15 @@
                         <p><strong>完成日期:</strong> ${date}</p>
                         <hr>
 
-                        <!-- NEW: Detailed Answers Section -->
                         <div id="detailed-answers">
                             <h2>問卷作答詳情</h2>
+                            <!-- NEW: Legend for row colors -->
+                            <p class="color-legend">
+                                下表中的每一行都根據其所屬的防衛風格進行了顏色標記：
+                                <span style="background-color: ${styleToRowColorMap.adaptive};">適應型</span>, 
+                                <span style="background-color: ${styleToRowColorMap.affectRegulating};">情感調節型</span>, 
+                                <span style="background-color: ${styleToRowColorMap.imageDistorting};">影像扭曲型</span>。
+                            </p>
                             <table class="answers-table">
                                 <thead>
                                     <tr>
@@ -475,7 +493,6 @@
                         </div>
                         <hr style="margin: 30px 0;">
 
-                        <!-- Summary Results Section -->
                         <div id="results">
                             <h2>結果總覽</h2>
                             <div class="result-style">
@@ -510,6 +527,5 @@
             URL.revokeObjectURL(a.href);
         });
     </script>
-
-
-</body></html>
+</body>
+</html>
