@@ -1,534 +1,513 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSQ-60 互動問卷 (增強版)</title>
-    <style>
-        :root {
-            --primary-color: #005a9c;
-            --secondary-color: #f0f8ff;
-            --text-color: #333;
-            --border-color: #ccc;
-            --error-color: #d9534f;
-            --success-color: #28a745;
-            --adaptive-color: #5cb85c;
-            --affect-color: #f0ad4e;
-            --image-color: #d9534f;
-        }
+    <title>DSQ-60 互動問卷 (七點量表版)</title>
+    <!-- 引入 Chart.js 用於繪製圖表 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入 jsPDF 和 html2canvas 用於匯出 PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
-            color: var(--text-color);
-            background-color: #f4f4f9;
+            color: #333;
+            background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
         }
-
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
             background: #fff;
-            padding: 20px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 25px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
-
-        h1, h2 {
-            color: var(--primary-color);
-            text-align: center;
+        h1, h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
         }
-
-        .instructions, .user-info-section {
-            background-color: var(--secondary-color);
-            border-left: 5px solid var(--primary-color);
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 4px;
-        }
-
-        .user-info-section .form-group {
+        .form-group {
             margin-bottom: 15px;
         }
-
-        .user-info-section label {
+        label {
             display: block;
-            font-weight: bold;
             margin-bottom: 5px;
+            font-weight: bold;
         }
-
-        .user-info-section input {
+        input[type="text"] {
             width: 100%;
             padding: 10px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
         }
-        
-        .user-info-section input.unanswered {
-            border-color: var(--error-color);
-            background-color: #fff5f5;
-        }
-
-        .scale-info {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            flex-wrap: wrap;
-        }
-
-        .question-block {
+        .question-item {
             margin-bottom: 25px;
             padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+            transition: all 0.3s ease;
         }
-
-        .question-block.unanswered {
-            background-color: #fff5f5;
-            border-color: var(--error-color);
+        .question-item.unanswered {
+            border: 2px solid #e74c3c;
+            background-color: #fbeae5;
         }
-
-        .question-text {
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .likert-scale {
+        .scale {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 5px;
+            gap: 8px;
+            margin-top: 10px;
         }
-
-        .likert-scale label {
+        .scale label {
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
             padding: 8px;
+            min-width: 45px;
             border-radius: 4px;
             transition: background-color 0.2s;
-            min-width: 30px;
-            text-align: center;
+            font-size: 0.9em;
         }
-
-        .likert-scale input[type="radio"] {
-            opacity: 0;
-            position: absolute;
-            width: 0;
-            height: 0;
+        .scale input[type="radio"] {
+            margin-bottom: 5px;
         }
-        
-        .likert-scale .radio-label {
-            display: block;
-            padding: 5px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
-            background-color: #fff;
+        .scale label:hover {
+            background-color: #ecf0f1;
         }
-        
-        .likert-scale input[type="radio"]:checked ~ .radio-label {
-            background-color: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-        }
-
-        .submit-button, .download-button {
+        .main-button, .secondary-button {
             display: block;
             width: 100%;
             padding: 15px;
-            font-size: 18px;
+            font-size: 1.2em;
             font-weight: bold;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
             margin-top: 20px;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.1s;
         }
-
-        .submit-button {
-            background-color: var(--success-color);
+        .main-button:hover {
+            background-color: #2980b9;
         }
-
-        .submit-button:hover {
-            background-color: #218838;
+        .main-button {
+            background-color: #3498db;
         }
-        
-        .download-button {
-            background-color: var(--primary-color);
+        .secondary-button {
+            background-color: #27ae60;
+            font-size: 1.1em;
+            margin-top: 10px;
         }
-        
-        .download-button:hover {
-            background-color: #00457c;
+        .secondary-button:hover {
+            background-color: #229954;
         }
-
         #results {
-            display: none;
             margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f9f9;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+            display: none;
+        }
+        .result-style {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-        }
-        
-        .result-item {
+            padding: 20px;
             margin-bottom: 20px;
-        }
-
-        .result-item h3 {
-            margin-bottom: 5px;
-        }
-        
-        .progress-bar-container {
-            width: 100%;
-            background-color: #e9ecef;
-            border-radius: 50px;
-            height: 25px;
             overflow: hidden;
         }
-
-        .progress-bar {
-            height: 100%;
-            width: 0;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .result-style h3 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+        .style-score {
+            font-size: 1.1em;
             font-weight: bold;
-            font-size: 14px;
-            border-radius: 50px;
-            transition: width 1.5s ease-in-out;
+            color: #2c3e50;
         }
-        
-        .progress-bar.adaptive { background-color: var(--adaptive-color); }
-        .progress-bar.affect { background-color: var(--affect-color); }
-        .progress-bar.image { background-color: var(--image-color); }
-
-        .result-interpretation {
-            font-size: 0.9em;
-            margin-top: 8px;
-            color: #666;
+        .chart-container {
+            margin-top: 20px;
         }
-        
-        details {
-            margin-top: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-        }
-        
-        summary {
+        .error-message {
+            color: #c0392b;
             font-weight: bold;
-            cursor: pointer;
-            color: var(--primary-color);
-        }
-        
-        .subscale-results {
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 8px;
-            font-size: 0.9em;
-        }
-
-        #error-message {
-            color: var(--error-color);
             text-align: center;
-            font-weight: bold;
             margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #c0392b;
+            background-color: #f9e5e3;
+            border-radius: 5px;
             display: none;
+        }
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-close {
+            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .export-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        /* Hidden element for PDF cover page rendering */
+        #pdf-cover-page {
+            position: absolute;
+            left: -9999px; /* Move off-screen */
+            top: -9999px;
+            width: 595px; /* A4 width in points */
+            height: 842px; /* A4 height in points */
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
         }
     </style>
 <script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.3f7572448765332f3047.js"></script></head>
 <body>
 
     <div class="container">
-        <h1>DSQ-60 互動問卷 (增強版)</h1>
-        
-        <div class="user-info-section">
-            <h2>個人資料</h2>
-            <div class="form-group">
-                <label for="participant-name">姓名</label>
-                <input type="text" id="participant-name" name="participant-name" placeholder="請輸入你的姓名">
+        <h1>DSQ-60 互動問卷 (七點量表版)</h1>
+
+        <div id="questionnaire-form">
+            <div class="personal-info">
+                <h2>個人資料</h2>
+                <div class="form-group">
+                    <label for="name">姓名</label>
+                    <input type="text" id="name" name="name" placeholder="請輸入你的姓名（可選）">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="participant-email">電郵地址</label>
-                <input type="email" id="participant-email" name="participant-email" placeholder="請輸入你的電郵地址">
+            <div class="instructions">
+                <h2>問卷說明</h2>
+                <p>本問卷旨在了解個人對自己的看法。請根據以下七點量表，指出每個項目在多大程度上適用於你。</p>
+                <p><b>1 = 完全不適用於我</b> | <b>7 = 完全適用於我</b></p>
             </div>
+            <form id="dsq-form"></form>
+            <div id="error-message" class="error-message">尚有題目未作答，請檢查下方標紅的題目。</div>
+            <button type="button" id="calculate-btn" class="main-button">計算我的分數</button>
         </div>
-
-        <div class="instructions">
-            <h2>問卷說明</h2>
-            <p>本問卷旨在了解個人對自己的看法。請根據以下九點量表，指出每個項目在多大程度上適用於你。</p>
-            <p>答案沒有對錯之分，請回答全部60條問題。</p>
-        </div>
-
-        <div class="scale-info">
-            <span>1 = 完全不適用於我</span>
-            <span>9 = 完全適用於我</span>
-        </div>
-
-        <form id="dsq-form">
-            <!-- Questions will be dynamically inserted here by JavaScript -->
-        </form>
-
-        <button type="button" id="calculate-btn" class="submit-button">計算我的分數</button>
-        <p id="error-message"></p>
 
         <div id="results">
-            <h2 id="results-title">你的結果</h2>
-            
-            <div class="result-item">
+            <h2>你的結果</h2>
+            <div id="adaptive-result" class="result-style">
                 <h3>適應型風格 (Adaptive Style)</h3>
-                <div class="progress-bar-container">
-                    <div class="progress-bar adaptive" id="adaptive-bar"></div>
+                <p>此風格反映出健康、成熟及具建設性的方式來應對壓力、衝突和困難情緒。高分者傾向能靈活處理挑戰，例如尋求支援、制定計劃、運用幽默感，並將精力轉化為有建設性的活動。</p>
+                <p class="style-score" id="adaptive-style-score"></p>
+                <div class="chart-container">
+                    <canvas id="adaptive-chart"></canvas>
                 </div>
-                <p class="result-interpretation">
-                    <strong>風格解釋：</strong>此風格反映出健康、成熟及具建設性的方式來應對壓力、衝突和困難情緒。高分者傾向能靈活處理挑戰，例如尋求支援、制定計劃、運用幽默感，並將精力轉化為有建設性的活動。
-                </p>
-                <details>
-                    <summary>顯示詳細防衛機制分數</summary>
-                    <div class="subscale-results" id="adaptive-subscales"></div>
-                </details>
             </div>
-
-            <div class="result-item">
+            <div id="affect-regulating-result" class="result-style">
                 <h3>情感調節型風格 (Affect-Regulating Style)</h3>
-                <div class="progress-bar-container">
-                    <div class="progress-bar affect" id="affect-bar"></div>
+                <p>此風格透過將困擾的情緒排除在意識之外來進行管理。相關的防衛機制可能包括將感受理智化、與情境保持情感距離，或為衝突作出合理解釋。雖然此風格有時有用，但過度依賴可能會抑制情感表達和自我覺察。</p>
+                <p class="style-score" id="affect-regulating-style-score"></p>
+                 <div class="chart-container">
+                    <canvas id="affect-regulating-chart"></canvas>
                 </div>
-                 <p class="result-interpretation">
-                    <strong>風格解釋：</strong>此風格透過將困擾的情緒排除在意識之外來進行管理。相關的防衛機制可能包括將感受理智化、與情境保持情感距離，或為衝突作出合理解釋。雖然此風格有時有用，但過度依賴可能會抑制情感表達和自我覺察。
-                </p>
-                <details>
-                    <summary>顯示詳細防衛機制分數</summary>
-                    <div class="subscale-results" id="affect-subscales"></div>
-                </details>
             </div>
-
-            <div class="result-item">
+            <div id="image-distorting-result" class="result-style">
                 <h3>影像扭曲型風格 (Image-Distorting Style)</h3>
-                <div class="progress-bar-container">
-                    <div class="progress-bar image" id="image-bar"></div>
+                <p>此風格透過扭曲對自己或他人的看法來處理內心困擾。這可能包括以黑白分明的角度看待人或事（非好即壞）、指責他人或衝動行事。高分者通常與人際關係困難和較無效的應對策略有關。</p>
+                <p class="style-score" id="image-distorting-style-score"></p>
+                 <div class="chart-container">
+                    <canvas id="image-distorting-chart"></canvas>
                 </div>
-                 <p class="result-interpretation">
-                    <strong>風格解釋：</strong>此風格透過扭曲對自己或他人的看法來處理內心困擾。這可能包括以黑白分明的角度看待人或事（非好即壞）、指責他人或衝動行事。高分者通常與人際關係困難和較無效的應對策略有關。
-                </p>
-                <details>
-                    <summary>顯示詳細防衛機制分數</summary>
-                    <div class="subscale-results" id="image-subscales"></div>
-                </details>
             </div>
-            
-            <button type="button" id="download-btn" class="download-button">匯出並下載結果</button>
+            <div class="export-buttons">
+                 <button type="button" id="export-html-btn" class="secondary-button">匯出HTML報告 (推薦，最高品質)</button>
+                 <button type="button" id="export-pdf-btn" class="main-button">匯出多頁PDF報告</button>
+            </div>
         </div>
     </div>
 
+    <!-- Modal for Explanations -->
+    <div id="explanation-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">×</span>
+            <h3 id="modal-title"></h3>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+    
+    <!-- Hidden container for rendering the PDF cover page -->
+    <div id="pdf-cover-page"></div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const questions = [
-                "1. 我從幫助他人中獲得滿足感，如果無法這樣做，我會感到沮喪。", "2. 人們常說我會鬧彆扭／生悶氣。", "3. 我能夠暫時將問題拋諸腦後，直到我有時間處理它為止。", "4. 我透過做一些有建設性和創造性的事（如繪畫或木工）來排解我的焦慮。", "5. 我對人的看法經常改變；一時之間我會高度評價他們，另一時間我又覺得他們一文不值。", "6. 我總能為自己做的每件事找到合理的理由。", "7. 我能夠輕易地自嘲。", "8. 我覺得人們傾向於虧待我。", "9. 如果有人搶劫並偷了我的錢，我寧願他得到幫助而不是懲罰。", "10. 當我與人發生衝突時，我會嘗試思考自己在哪方面有責任。", "11. 人們說我傾向於忽略不愉快的事實，彷彿它們不存在一樣。", "12. 我時常覺得自己比身邊的人優越。", "13. 有人正在情感上榨乾我的一切。", "14. 當遇到真正的危險時，我彷彿置身事外，感覺不到恐懼。", "15. 如果我受到不公平對待，我會挺身而出捍衛自己的權利。", "16. 我應對危險時，就像自己是超人一樣。", "17. 我為自己能夠挫他人的銳氣而感到自豪。", "18. 當有事情困擾我時，我常常會衝動行事。", "19. 事實上，我頗沒有價值。", "20. 與人相處時，他們最終往往會感受到我的感受。", "21. 我從幻想中得到的滿足感比從現實生活中得到的更多。", "22. 當我生氣時，我會選擇退縮。", "23. 當我身處困境時，我時常感到不真實。", "24. 我擁有特殊才能，讓我可以毫無問題地度過一生。", "25. 我寧願談論抽象的事情，也不願談論我的感受。", "26. 當事情不順利時，總是有很好的理由可以解釋。", "27. 我在白日夢中解決的事情比在現實生活中更多。", "28. 當別人生我的氣時，我傾向於認為他們小題大作。", "29. 有時我覺得自己是天使，有時又覺得自己是魔鬼。", "30. 如果有人對我生氣，我會因為一些平常不在意的事情而感到煩惱。", "31. 當我感到受傷時，我會變得公然地具攻擊性。", "32. 我幾乎不記得任何關於我早年上學的事情。", "33. 當我悲傷時，我會選擇退縮。", "34. 我總覺得我認識的某個人就像一位守護天使。", "35. 事實上，我比人們想像的還要差。", "36. 對我來說，人要麼是好人，要麼是壞人。", "37. 如果我的上司惹惱我，我可能會在工作中犯錯或故意放慢工作速度來報復他。", "38. 我認識一個人，他無所不能，而且絕對公平公正。", "39. 如果我經歷了不愉快的事情，第二天有時我會忘記那是什麼事。", "40. 幫助他人讓我感覺良好。", "41. 如果表達感受會干擾我正在做的事，我能夠抑制自己的情緒。", "42. 在痛苦的困境中，我通常能看到其中有趣的一面。", "43. 我常常發現自己對那些理應讓我生氣的人非常友善。", "44. 沒有「在每個人身上找到一點好處」這回事，如果你是壞人，你就是徹頭徹尾的壞人。", "45. 當我做的事情結果不佳時，我會試圖找出我可能忽略了什麼。", "46. 我覺得人們傾向於對我不誠實。", "47. 當我必須面對困難情況時，我會嘗試想像那會是怎樣的，並計劃應對方法。", "48. 醫生從來沒有真正了解我的問題出在哪裡。", "49. 在我為自己的權利抗爭後，我傾向於為自己的堅定立場道歉。", "50. 如果有人惹惱我，我會告訴他們，但不會傷害他們的感情。", "51. 我經常被告知我不表露自己的感受。", "52. 當我心情不好時，我會想和別人在一起。", "53. 如果我能預先知道自己將會難過，我就能更好地應對。", "54. 無論我怎樣投訴，都從未得到滿意的回應。", "55. 我不會直接說出我的感受，而是會詳細地解釋我的想法。", "56. 在理應有強烈情緒反應的情況下，我常常發現自己沒有任何感覺。", "57. 當我感到沮喪或焦慮時，我喜歡從事一些創造性或體能活動。", "58. 如果我陷入危機，我會找人傾訴我的憂慮。", "59. 當我有一個具攻擊性的想法時，我覺得有必要做些事情來彌補它。", "60. 當有令人興奮的事情發生時，我卻傾向於為一些不重要的細節而煩惱。"
+        // --- JAVASCRIPT LOGIC ---
+        const questions = [ { "qNum": 1, "text": "當我幫助別人時，我感到滿足；如果不能這樣做，我會感到沮喪。" }, { "qNum": 2, "text": "人們常說我悶悶不樂、沉默寡言。" }, { "qNum": 3, "text": "我可以暫時不去想某個問題，直到我有時間去處理它。" }, { "qNum": 4, "text": "我透過從事繪畫或木工等有建設性和創造性的活動來控制我的焦慮。" }, { "qNum": 5, "text": "我對人的看法經常改變；有時我對他們評價很高，有時又覺得他們一文不值。" }, { "qNum": 6, "text": "我能為我做的任何事找到充分的理由。" }, { "qNum": 7, "text": "我可以很輕易地嘲笑自己。" }, { "qNum": 8, "text": "人們似乎傾向於不公平地對待我。" }, { "qNum": 9, "text": "如果有人攻擊我並搶走我的錢，我寧願他得到幫助而不是懲罰。" }, { "qNum": 10, "text": "如果我與某人發生衝突，我會試著去思考我在這場衝突中可能有什麼責任。" }, { "qNum": 11, "text": "人們說我傾向於忽略不愉快的事實，彷彿它們不存在一樣。" }, { "qNum": 12, "text": "我常常感到自己比周遭的人優越。" }, { "qNum": 13, "text": "有人正在情感上榨乾我的一切。" }, { "qNum": 14, "text": "當有真正的危險時，我感覺好像自己不在那裡，而且我不害怕。" }, { "qNum": 15, "text": "如果我受到不公平的對待，我會為自己的權利挺身而出。" }, { "qNum": 16, "text": "我處理危險時，就像我是超人/擁有超能力一樣。" }, { "qNum": 17, "text": "我為自己能把人打回原形的能力感到自豪。" }, { "qNum": 18, "text": "當有事情困擾我時，我經常會衝動行事。" }, { "qNum": 19, "text": "事實上，我相當沒有價值。" }, { "qNum": 20, "text": "當我與人打交道時，他們常常最終感受到我的感受。" }, { "qNum": 21, "text": "我從我的幻想中得到的滿足感比從我的現實生活中得到的更多。" }, { "qNum": 22, "text": "當我難過時，我會退縮。" }, { "qNum": 23, "text": "當我遇到困難時，我常常感到不真實。" }, { "qNum": 24, "text": "我有特殊才能，讓我可以毫無問題地度過一生。" }, { "qNum": 25, "text": "我寧願談論抽象的事情，也不願談論我的感受。" }, { "qNum": 26, "text": "當事情不順利時，總是有充分的理由。" }, { "qNum": 27, "text": "我透過白日夢完成的事情比在現實生活中更多。" }, { "qNum": 28, "text": "當人們對我生氣時，我傾向於認為他們反應過度了。" }, { "qNum": 29, "text": "有時我認為自己是個天使，有時我認為自己非常壞。" }, { "qNum": 30, "text": "如果有人讓我生氣，我傾向於對一些我通常會忽略的事情感到煩惱。" }, { "qNum": 31, "text": "當我感到受傷時，我會變得公然具有攻擊性。" }, { "qNum": 32, "text": "我不太記得我的小學時光。" }, { "qNum": 33, "text": "當我悲傷時，我會退縮。" }, { "qNum": 34, "text": "我總覺得我認識的某個人是我的守護天使。" }, { "qNum": 35, "text": "我通常比人們想像的要糟糕。" }, { "qNum": 36, "text": "對我來說，人要麼是好人，要麼是壞人。" }, { "qNum": 37, "text": "如果我的老闆讓我生氣，我可能會在工作上犯錯或故意放慢速度來報復。" }, { "qNum": 38, "text": "我認識的某個人可以做任何事，並且絕對公平正直。" }, { "qNum": 39, "text": "如果我經歷了不愉快的事情，第二天有時會忘記那是什麼事。" }, { "qNum": 40, "text": "幫助別人讓我感覺很好。" }, { "qNum": 41, "text": "如果表露情緒會干擾我正在做的事，我可以控制住我的情緒。" }, { "qNum": 42, "text": "我通常能看到一個原本嚴肅情況下的幽默面。" }, { "qNum": 43, "text": "我常常發現自己對那些我理應生氣的人非常友善。" }, { "qNum": 44, "text": "沒有所謂「在每個人身上找到優點」這回事；如果你壞，你就是徹頭徹尾的壞。" }, { "qNum": 45, "text": "當我做的事情不順利時，我會試著找出我忽略了什麼。" }, { "qNum": 46, "text": "人們傾向於對我不誠實或不公平。" }, { "qNum": 47, "text": "如果我必須面對一個困難情況時，我會試著想像它會是什麼樣子，並計畫應對的方法。" }, { "qNum": 48, "text": "醫生似乎從來都無法完全理解我的問題。" }, { "qNum": 49, "text": "在為自己的權利奮鬥後，我傾向於為自己的強勢道歉。" }, { "qNum": 50, "text": "如果有人惹惱我，我會告訴他們，而不會傷害他們。" }, { "qNum": 51, "text": "人們常告訴我，我不表露我的感受。" }, { "qNum": 52, "text": "當我感覺不好時，我喜歡和某人在一起。" }, { "qNum": 53, "text": "如果我能預見到我將會感到難過，我就能更好地應對這種情況。" }, { "qNum": 54, "text": "無論我怎麼抱怨，我都得不到別人滿意的回應。" }, { "qNum": 55, "text": "我不直接說出我的感受，而是詳細地解釋我的想法。" }, { "qNum": 56, "text": "當我感到情緒激動的事情時，我卻沒有任何感覺。" }, { "qNum": 57, "text": "當我感到沮喪或焦慮時，我喜歡投入一項創造性或體能活動。" }, { "qNum": 58, "text": "如果我陷入危機，我會找人傾訴我的煩惱。" }, { "qNum": 59, "text": "如果我有一個攻擊性的想法，我會感到需要做些什麼來彌補它。" }, { "qNum": 60, "text": "當發生情緒激動的事情時，我傾向於關注不重要的細節。" } ];
+        const questionMapping = { '利他主義': { items: [1, 40], style: 'adaptive' }, '被動攻擊': { items: [2, 37], style: 'imageDistorting' }, '壓抑': { items: [3, 41], style: 'adaptive' }, '昇華': { items: [4, 57], style: 'adaptive' }, '分裂/他人': { items: [5, 36], style: 'imageDistorting' }, '合理化': { items: [6, 26], style: 'affectRegulating' }, '幽默': { items: [7, 42], style: 'adaptive' }, '投射': { items: [8, 46], style: 'imageDistorting' }, '反應形成': { items: [9, 43], style: 'affectRegulating' }, '自我觀察': { items: [10, 45], style: 'adaptive' }, '否認': { items: [11, 28], style: 'imageDistorting' }, '貶低/他人': { items: [12, 17], style: 'imageDistorting' }, '投射性認同': { items: [13, 20], style: 'imageDistorting' }, '解離': { items: [14, 23], style: 'affectRegulating' }, '自我肯定': { items: [15, 50], style: 'adaptive' }, '全能': { items: [16, 24], style: 'imageDistorting' }, '行動化': { items: [18, 31], style: 'imageDistorting' }, '貶低/自我': { items: [19, 35], style: 'imageDistorting' }, '幻想': { items: [21, 27], style: 'affectRegulating' }, '退縮': { items: [22, 33], style: 'affectRegulating' }, '理智化': { items: [25, 55], style: 'affectRegulating' }, '分裂/自我': { items: [29, 44], style: 'imageDistorting' }, '置換': { items: [30, 60], style: 'affectRegulating' }, '潛抑': { items: [32, 39], style: 'affectRegulating' }, '理想化': { items: [34, 38], style: 'imageDistorting' }, '孤立': { items: [51, 56], style: 'affectRegulating' }, '拒絕幫助的抱怨': { items: [48, 54], style: 'imageDistorting' }, '抵消': { items: [49, 59], style: 'affectRegulating' }, '預期': { items: [47, 53], style: 'adaptive' }, '求助': { items: [52, 58], style: 'adaptive' } };
+        const defenseExplanations = { '利他主義': '透過幫助他人來處理自己的內心衝突或壓力，從而獲得替代性的滿足感。', '被動攻擊': '以間接、隱蔽的方式表達對他人或情境的攻擊性，例如拖延、固執、故意犯錯等。', '壓抑': '有意識地將不想要的想法、感受或衝動暫時排除在意識之外，以便在更合適的時間處理。', '昇華': '將無法被社會接受的衝動或慾望，轉化為具有建設性、被社會認可的行為，如藝術創作或體育運動。', '分裂/他人': '將他人視為「全好」或「全壞」，無法整合對方優點和缺點，看法在兩個極端間擺盪。', '合理化': '為自己無法接受的行為、動機或感受，製造一個看似合理、合乎邏輯的解釋，以掩蓋真實原因。', '幽默': '以詼諧、有趣的方式看待困境或壓力事件，從而減輕其負面情緒影響。', '投射': '將自己內心無法接受的想法、感受或特質，歸因到他人身上，認為是別人擁有這些特質。', '反應形成': '表現出與內心真實慾望或衝動完全相反的行為，以掩蓋和控制這些不被接受的感受。', '自我觀察': '能夠反思自己的思想、感受、動機和行為，並從中學習和調整。', '否認': '拒絕承認或面對那些令人痛苦的現實、事件或感受，彷彿它們從未發生。', '貶低/他人': '透過誇大或強調他人的負面特質來貶低對方，以提升自尊或應對嫉妒感。', '投射性認同': '不僅將自己的感受投射給他人，還會無意識地引導對方產生相應的感受和行為，從而「證實」自己的投射。', '解離': '在面對巨大壓力或創傷時，暫時性地改變意識、記憶、身份或對環境的知覺，感覺與現實脫節。', '自我肯定': '能夠直接、坦誠地表達自己的需求、感受和權利，同時尊重他人。', '全能': '相信自己擁有超乎常人的能力、權力或重要性，以應對無助感或自卑感。', '行動化': '透過衝動的行為來表達內心的衝突或情緒，而不是用語言來表達或反思。', '貶低/自我': '過度誇大自己的缺點和不足，將自己視為沒有價值，以應對內心的衝突或失敗感。', '幻想': '沉浸在白日夢或想像的世界中，以逃避現實生活中的不滿和挫折。', '退縮': '在面對壓力或衝突時，從社交情境或人際關係中退縮，變得孤立和被動。', '理智化': '過度使用抽象、邏輯和理性的思考方式來處理充滿情感的問題，以避免感受痛苦的情緒。', '分裂/自我': '將對自己的看法分為「全好」和「全壞」兩極，無法形成一個穩定、整合的自我形象。', '置換': '將對某個對象（通常是權威或有威脅性的人物）的強烈情緒，轉移到一個較安全、較不具威脅性的對象上。', '潛抑': '無意識地將痛苦的記憶、想法或衝動排除在意識之外，使其無法被回憶起來。', '理想化': '過度高估某個對象（人或事物）的優點，賦予其完美的特質，以滿足內心的需求或應對失望。', '孤立': '將事件的想法內容與其伴隨的情感分開，能夠回憶起事件本身，但感受不到相關的情緒。', '拒絕幫助的抱怨': '反覆向他人抱怨自己的問題，但又拒絕或貶低他人提供的任何建議或幫助。', '抵消': '試圖透過某種象徵性的行為或想法，來「抵消」或彌補一個已經發生的、無法接受的念頭或行為。', '預期': '在預期到未來可能出現的壓力或不適時，提前進行心理準備和現實規劃，以減輕其衝擊。', '求助': '在面對困難或壓力時，向他人尋求支持、安慰和幫助。' };
+        
+        // --- Core Application Logic (Unchanged) ---
+        const form = document.getElementById('dsq-form');
+        questions.forEach(q => {
+            const item = document.createElement('div');
+            item.className = 'question-item';
+            item.id = `question-item-${q.qNum}`;
+            let scaleHTML = '';
+            for (let i = 1; i <= 7; i++) { scaleHTML += `<label><input type="radio" name="q${q.qNum}" value="${i}" required> ${i}</label>`; }
+            item.innerHTML = `<div class="question-text">${q.qNum}. ${q.text}</div><div class="scale">${scaleHTML}</div>`;
+            form.appendChild(item);
+        });
+
+        let charts = {};
+
+        document.getElementById('calculate-btn').addEventListener('click', () => {
+            let allAnswered = true, firstUnanswered = null;
+            document.querySelectorAll('.question-item.unanswered').forEach(el => el.classList.remove('unanswered'));
+            for (let i = 1; i <= questions.length; i++) {
+                if (!document.querySelector(`input[name="q${i}"]:checked`)) {
+                    allAnswered = false;
+                    const questionItem = document.getElementById(`question-item-${i}`);
+                    questionItem.classList.add('unanswered');
+                    if (!firstUnanswered) firstUnanswered = questionItem;
+                }
+            }
+            if (!allAnswered) {
+                document.getElementById('error-message').style.display = 'block';
+                if (firstUnanswered) firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            document.getElementById('error-message').style.display = 'none';
+            const defenseScores = {}, styleScores = { adaptive: [], affectRegulating: [], imageDistorting: [] };
+            for (const key in questionMapping) {
+                const { items, style } = questionMapping[key];
+                const score1 = parseInt(document.querySelector(`input[name="q${items[0]}"]:checked`).value);
+                const score2 = parseInt(document.querySelector(`input[name="q${items[1]}"]:checked`).value);
+                const avgScore = (score1 + score2) / 2;
+                defenseScores[key] = avgScore;
+                styleScores[style].push(avgScore);
+            }
+            const calculateAverage = arr => (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2);
+            document.getElementById('adaptive-style-score').textContent = `總體風格分數: ${calculateAverage(styleScores.adaptive)}`;
+            document.getElementById('affect-regulating-style-score').textContent = `總體風格分數: ${calculateAverage(styleScores.affectRegulating)}`;
+            document.getElementById('image-distorting-style-score').textContent = `總體風格分數: ${calculateAverage(styleScores.imageDistorting)}`;
+            renderCharts(defenseScores);
+            const resultsSection = document.getElementById('results');
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function renderCharts(scores) {
+            Object.values(charts).forEach(chart => chart.destroy());
+            const stylesData = {
+                adaptive: { labels: [], data: [], backgroundColor: 'rgba(46, 204, 113, 0.6)' },
+                affectRegulating: { labels: [], data: [], backgroundColor: 'rgba(52, 152, 219, 0.6)' },
+                imageDistorting: { labels: [], data: [], backgroundColor: 'rgba(231, 76, 60, 0.6)' }
+            };
+            for (const defense in questionMapping) {
+                const { style } = questionMapping[defense];
+                stylesData[style].labels.push(defense);
+                stylesData[style].data.push(scores[defense]);
+            }
+            charts.adaptive = createChart('adaptive-chart', '適應型防衛機制', stylesData.adaptive);
+            charts.affectRegulating = createChart('affect-regulating-chart', '情感調節型防衛機制', stylesData.affectRegulating);
+            charts.imageDistorting = createChart('image-distorting-chart', '影像扭曲型防衛機制', stylesData.imageDistorting);
+        }
+
+        function createChart(canvasId, label, chartData) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            return new Chart(ctx, {
+                type: 'bar',
+                data: { labels: chartData.labels, datasets: [{ label: label, data: chartData.data, backgroundColor: chartData.backgroundColor, borderColor: chartData.backgroundColor.replace('0.6', '1'), borderWidth: 1 }] },
+                options: {
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, max: 7 } },
+                    plugins: { legend: { display: false } },
+                    onClick: (event, elements) => { if (elements.length > 0) showExplanation(chartData.labels[elements[0].index]); },
+                    onHover: (event, chartElement) => { event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default'; }
+                }
+            });
+        }
+
+        const modal = document.getElementById('explanation-modal');
+        function showExplanation(defenseName) {
+            document.getElementById('modal-title').innerText = defenseName;
+            document.getElementById('modal-text').innerText = defenseExplanations[defenseName] || '暫無詳細解釋。';
+            modal.style.display = 'block';
+        }
+        function closeModal() { modal.style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == modal) closeModal(); }
+
+        // --- UPDATED: PDF Export Logic (with Cover Page fix) ---
+        document.getElementById('export-pdf-btn').addEventListener('click', async () => {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+            const name = document.getElementById('name').value || '未提供';
+            const date = new Date().toLocaleString('zh-TW', { hour12: false });
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const margin = 40;
+
+            // --- FIX: Render cover page as an image to avoid font issues ---
+            const coverPageElement = document.getElementById('pdf-cover-page');
+            coverPageElement.innerHTML = `
+                <div style="font-family: sans-serif; font-size: 16px; color: #2c3e50;">
+                    <h1 style="font-size: 32px; text-align: center; margin-top: 60px; color: #2c3e50;">DSQ-60 結果報告</h1>
+                    <p style="font-size: 18px; margin-top: 80px;"><strong>姓名:</strong> ${name}</p>
+                    <p style="font-size: 18px;"><strong>完成日期:</strong> ${date}</p>
+                    <hr style="margin-top: 20px;">
+                </div>
+            `;
+            const coverCanvas = await html2canvas(coverPageElement, { scale: 2 });
+            const coverImgData = coverCanvas.toDataURL('image/png');
+            pdf.addImage(coverImgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+            const elementsToExport = [
+                { id: 'adaptive-result', title: '適應型風格' },
+                { id: 'affect-regulating-result', title: '情感調節型風格' },
+                { id: 'image-distorting-result', title: '影像扭曲型風格' }
             ];
 
-            const form = document.getElementById('dsq-form');
-            let questionHTML = '';
-            questions.forEach((qText, index) => {
-                const qNum = index + 1;
-                questionHTML += `<div class="question-block" id="q-block-${qNum}">`;
-                questionHTML += `<p class="question-text">${qText}</p>`;
-                questionHTML += `<div class="likert-scale">`;
-                for (let i = 1; i <= 9; i++) {
-                    questionHTML += `<label><input type="radio" name="q${qNum}" value="${i}"><span class="radio-label">${i}</span></label>`;
-                }
-                questionHTML += `</div></div>`;
-            });
-            form.innerHTML = questionHTML;
+            for (const elementInfo of elementsToExport) {
+                const element = document.getElementById(elementInfo.id);
+                pdf.addPage();
+                const canvas = await html2canvas(element, { scale: 3, useCORS: true });
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min((pdfWidth - margin * 2) / imgWidth, (pdfHeight - margin * 2) / imgHeight);
+                const imgFinalWidth = imgWidth * ratio;
+                const imgFinalHeight = imgHeight * ratio;
+                const x = (pdfWidth - imgFinalWidth) / 2;
+                const y = (pdfHeight - imgFinalHeight) / 2;
+                pdf.addImage(imgData, 'PNG', x, y, imgFinalWidth, imgFinalHeight);
+            }
 
-            const scoringKey = {
-                defenses: {
-                    actingOut: [18, 31], affiliation: [52, 58], altruism: [9, 40], anticipation: [47, 53], denial: [11, 28],
-                    devaluationOfOther: [17, 44], devaluationOfSelf: [19, 35], displacement: [30, 37], dissociation: [14, 23],
-                    fantasy: [21, 27], helpRejectingComplaining: [48, 54], humor: [7, 42], idealization: [34, 38],
-                    intellectualization: [25, 55], isolation: [51, 56], omnipotence: [16, 24], passiveAggressive: [2, 22],
-                    projection: [8, 46], projectiveIdentification: [13, 20], rationalization: [6, 26], reactionFormation: [1, 43],
-                    repression: [32, 39], selfAssertion: [15, 50], selfObservation: [10, 45], splittingOfOther: [5, 36],
-                    splittingOfSelf: [29, 49], sublimation: [4, 57], suppression: [3, 41], undoing: [59, 60], withdrawal: [12, 33]
-                },
-                styles: {
-                    imageDistorting: ['splittingOfOther', 'projection', 'denial', 'devaluationOfOther', 'projectiveIdentification', 'omnipotence', 'devaluationOfSelf', 'fantasy', 'splittingOfSelf', 'idealization', 'actingOut', 'displacement', 'passiveAggressive', 'withdrawal', 'helpRejectingComplaining'],
-                    affectRegulating: ['undoing', 'isolation', 'intellectualization', 'dissociation', 'rationalization', 'reactionFormation', 'repression'],
-                    adaptive: ['sublimation', 'suppression', 'anticipation', 'humor', 'selfAssertion', 'selfObservation', 'affiliation', 'altruism']
-                },
-                defenseNames: {
-                    actingOut: "行動化 (Acting Out)", affiliation: "親和 (Affiliation)", altruism: "利他主義 (Altruism)", anticipation: "預期 (Anticipation)", denial: "否定 (Denial)",
-                    devaluationOfOther: "貶低他人 (Devaluation of Other)", devaluationOfSelf: "貶低自己 (Devaluation of Self)", displacement: "轉移 (Displacement)", dissociation: "解離 (Dissociation)",
-                    fantasy: "幻想 (Fantasy)", helpRejectingComplaining: "拒助-抱怨 (Help-Rejecting Complaining)", humor: "幽默 (Humor)", idealization: "理想化 (Idealization)",
-                    intellectualization: "理智化 (Intellectualization)", isolation: "情感隔離 (Isolation)", omnipotence: "全能感 (Omnipotence)", passiveAggressive: "被動攻擊 (Passive-Aggressive)",
-                    projection: "投射 (Projection)", projectiveIdentification: "投射性認同 (Projective Identification)", rationalization: "合理化 (Rationalization)", reactionFormation: "反向形成 (Reaction Formation)",
-                    repression: "潛抑 (Repression)", selfAssertion: "自我肯定 (Self-Assertion)", selfObservation: "自我觀察 (Self-Observation)", splittingOfOther: "分裂他人 (Splitting of Other)",
-                    splittingOfSelf: "分裂自我 (Splitting of Self)", sublimation: "昇華 (Sublimation)", suppression: "壓抑 (Suppression)", undoing: "抵消 (Undoing)", withdrawal: "退縮 (Withdrawal)"
-                }
-            };
+            pdf.save('DSQ-60_多頁報告.pdf');
+        });
+
+        // --- UPDATED: HTML Export Logic (with detailed answers) ---
+        document.getElementById('export-html-btn').addEventListener('click', () => {
+            const name = document.getElementById('name').value || '未提供';
+            const date = new Date().toLocaleString('zh-TW', { hour12: false });
+
+            const adaptiveChartImg = charts.adaptive.toBase64Image();
+            const affectChartImg = charts.affectRegulating.toBase64Image();
+            const imageChartImg = charts.imageDistorting.toBase64Image();
+
+            const adaptiveScore = document.getElementById('adaptive-style-score').textContent;
+            const affectScore = document.getElementById('affect-regulating-style-score').textContent;
+            const imageScore = document.getElementById('image-distorting-style-score').textContent;
             
-            let finalResults = {}; // To store results for download
+            // --- NEW: Create a reverse map from question number to defense mechanism ---
+            const qNumToDefenseMap = {};
+            for (const defenseName in questionMapping) {
+                questionMapping[defenseName].items.forEach(qNum => {
+                    qNumToDefenseMap[qNum] = defenseName;
+                });
+            }
 
-            document.getElementById('calculate-btn').addEventListener('click', function() {
-                const nameInput = document.getElementById('participant-name');
-                const emailInput = document.getElementById('participant-email');
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                
-                let errors = [];
-                nameInput.classList.remove('unanswered');
-                emailInput.classList.remove('unanswered');
-                
-                if (!name) {
-                    errors.push('請輸入你的姓名。');
-                    nameInput.classList.add('unanswered');
-                }
-                if (!email) {
-                    errors.push('請輸入你的電郵地址。');
-                    emailInput.classList.add('unanswered');
-                } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-                    errors.push('請輸入有效的電郵地址。');
-                    emailInput.classList.add('unanswered');
-                }
+            // --- NEW: Generate HTML for the detailed answers table ---
+            let answerRowsHtml = '';
+            for (let i = 1; i <= questions.length; i++) {
+                const question = questions.find(q => q.qNum === i);
+                const answer = document.querySelector(`input[name="q${i}"]:checked`).value;
+                const defense = qNumToDefenseMap[i];
+                answerRowsHtml += `
+                    <tr>
+                        <td>${question.qNum}</td>
+                        <td>${question.text}</td>
+                        <td>${defense}</td>
+                        <td>${answer}</td>
+                    </tr>
+                `;
+            }
 
-                const answers = {};
-                let allQuestionsAnswered = true;
-                document.querySelectorAll('.question-block').forEach(block => block.classList.remove('unanswered'));
-                
-                for (let i = 1; i <= 60; i++) {
-                    const selected = document.querySelector(`input[name="q${i}"]:checked`);
-                    if (selected) {
-                        answers[i] = parseInt(selected.value);
-                    } else {
-                        allQuestionsAnswered = false;
-                        document.getElementById(`q-block-${i}`).classList.add('unanswered');
-                    }
-                }
+            let cssText = '';
+            for (let sheet of document.styleSheets) {
+                try {
+                    for (let rule of sheet.cssRules) { cssText += rule.cssText; }
+                } catch (e) { console.warn("Could not read CSS rule:", e); }
+            }
 
-                if (!allQuestionsAnswered) {
-                    errors.push('請回答全部60條問題。');
-                }
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html lang="zh-Hant">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>DSQ-60 結果報告 - ${name}</title>
+                    <style>${cssText}</style>
+                    <style> 
+                        body { padding: 20px; } 
+                        .export-buttons, #questionnaire-form, .modal, #pdf-cover-page { display: none !important; }
+                        #results { display: block !important; border-top: none; margin-top: 0; padding-top: 0; }
+                        .answers-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
+                        .answers-table th, .answers-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
+                        .answers-table th { background-color: #f8f9fa; font-weight: bold; }
+                        .answers-table tr:nth-child(even) { background-color: #fdfdfd; }
+                        .answers-table td:nth-child(1), .answers-table td:nth-child(4) { text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>DSQ-60 結果報告</h1>
+                        <p><strong>姓名:</strong> ${name}</p>
+                        <p><strong>完成日期:</strong> ${date}</p>
+                        <hr>
 
-                const errorMessage = document.getElementById('error-message');
-                if (errors.length > 0) {
-                    errorMessage.innerHTML = errors.join('<br>');
-                    errorMessage.style.display = 'block';
-                    const firstUnanswered = document.querySelector('.unanswered');
-                    if (firstUnanswered) {
-                        firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    return;
-                }
-                errorMessage.style.display = 'none';
+                        <!-- NEW: Detailed Answers Section -->
+                        <div id="detailed-answers">
+                            <h2>問卷作答詳情</h2>
+                            <table class="answers-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">題號</th>
+                                        <th style="width: 55%;">題目內容</th>
+                                        <th style="width: 25%;">對應防衛機制</th>
+                                        <th style="width: 15%;">你的回答 (1-7)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${answerRowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                        <hr style="margin: 30px 0;">
 
-                const defenseScores = {};
-                for (const defense in scoringKey.defenses) {
-                    const [item1, item2] = scoringKey.defenses[defense];
-                    defenseScores[defense] = (answers[item1] + answers[item2]) / 2;
-                }
+                        <!-- Summary Results Section -->
+                        <div id="results">
+                            <h2>結果總覽</h2>
+                            <div class="result-style">
+                                <h3>適應型風格 (Adaptive Style)</h3>
+                                <p>此風格反映出健康、成熟及具建設性的方式來應對壓力、衝突和困難情緒...</p>
+                                <p class="style-score">${adaptiveScore}</p>
+                                <div class="chart-container"><img src="${adaptiveChartImg}" style="width:100%; height:auto;"></div>
+                            </div>
+                            <div class="result-style">
+                                <h3>情感調節型風格 (Affect-Regulating Style)</h3>
+                                <p>此風格透過將困擾的情緒排除在意識之外來進行管理...</p>
+                                <p class="style-score">${affectScore}</p>
+                                <div class="chart-container"><img src="${affectChartImg}" style="width:100%; height:auto;"></div>
+                            </div>
+                            <div class="result-style">
+                                <h3>影像扭曲型風格 (Image-Distorting Style)</h3>
+                                <p>此風格透過扭曲對自己或他人的看法來處理內心困擾...</p>
+                                <p class="style-score">${imageScore}</p>
+                                <div class="chart-container"><img src="${imageChartImg}" style="width:100%; height:auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
 
-                const styleScores = {};
-                for (const style in scoringKey.styles) {
-                    let total = 0;
-                    const defenseList = scoringKey.styles[style];
-                    defenseList.forEach(defense => {
-                        total += defenseScores[defense];
-                    });
-                    styleScores[style] = total / defenseList.length;
-                }
-
-                finalResults = { name, email, styleScores, defenseScores }; // Store for download
-
-                document.getElementById('results-title').textContent = `${name}的結果`;
-
-                // Display main scores
-                const adaptiveScore = styleScores.adaptive.toFixed(2);
-                const affectScore = styleScores.affectRegulating.toFixed(2);
-                const imageScore = styleScores.imageDistorting.toFixed(2);
-
-                const adaptiveBar = document.getElementById('adaptive-bar');
-                const affectBar = document.getElementById('affect-bar');
-                const imageBar = document.getElementById('image-bar');
-
-                adaptiveBar.textContent = `平均分: ${adaptiveScore} / 9`;
-                affectBar.textContent = `平均分: ${affectScore} / 9`;
-                imageBar.textContent = `平均分: ${imageScore} / 9`;
-
-                setTimeout(() => {
-                    adaptiveBar.style.width = (adaptiveScore / 9) * 100 + '%';
-                    affectBar.style.width = (affectScore / 9) * 100 + '%';
-                    imageBar.style.width = (imageScore / 9) * 100 + '%';
-                }, 100);
-
-                // Display subscale scores
-                const displaySubscales = (styleName, containerId) => {
-                    const container = document.getElementById(containerId);
-                    container.innerHTML = '';
-                    const defenseList = scoringKey.styles[styleName];
-                    defenseList.sort().forEach(defense => {
-                        const score = defenseScores[defense].toFixed(2);
-                        const defenseName = scoringKey.defenseNames[defense] || defense;
-                        container.innerHTML += `<div>${defenseName}: <strong>${score}</strong></div>`;
-                    });
-                };
-
-                displaySubscales('adaptive', 'adaptive-subscales');
-                displaySubscales('affectRegulating', 'affect-subscales');
-                displaySubscales('imageDistorting', 'image-subscales');
-
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.style.display = 'block';
-                resultsDiv.scrollIntoView({ behavior: 'smooth' });
-            });
-
-            document.getElementById('download-btn').addEventListener('click', function() {
-                if (!finalResults.name) return;
-
-                let reportText = `DSQ-60 結果報告\n`;
-                reportText += `====================================\n\n`;
-                reportText += `姓名: ${finalResults.name}\n`;
-                reportText += `電郵地址: ${finalResults.email}\n`;
-                reportText += `報告生成時間: ${new Date().toLocaleString('zh-HK')}\n\n`;
-
-                reportText += `主要防衛風格分數\n`;
-                reportText += `--------------------------\n`;
-                reportText += `適應型風格 (Adaptive Style): ${finalResults.styleScores.adaptive.toFixed(2)} / 9\n`;
-                reportText += `情感調節型風格 (Affect-Regulating Style): ${finalResults.styleScores.affectRegulating.toFixed(2)} / 9\n`;
-                reportText += `影像扭曲型風格 (Image-Distorting Style): ${finalResults.styleScores.imageDistorting.toFixed(2)} / 9\n\n`;
-
-                const generateSubscaleText = (styleName, title) => {
-                    let text = `${title}\n--------------------------\n`;
-                    const defenseList = scoringKey.styles[styleName];
-                    defenseList.sort().forEach(defense => {
-                        const score = finalResults.defenseScores[defense].toFixed(2);
-                        const defenseName = scoringKey.defenseNames[defense] || defense;
-                        text += `${defenseName}: ${score}\n`;
-                    });
-                    return text + '\n';
-                };
-
-                reportText += generateSubscaleText('adaptive', '詳細分數: 適應型風格');
-                reportText += generateSubscaleText('affectRegulating', '詳細分數: 情感調節型風格');
-                reportText += generateSubscaleText('imageDistorting', '詳細分數: 影像扭曲型風格');
-                
-                const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `DSQ-60_結果_${finalResults.name.replace(/ /g, '_')}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            });
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'DSQ-60_完整報告.html';
+            a.click();
+            URL.revokeObjectURL(a.href);
         });
     </script>
 
