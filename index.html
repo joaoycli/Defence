@@ -233,13 +233,14 @@
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
+            height: 350px; 
         }
         
         .export-buttons {
             text-align: center;
             margin-top: 30px;
         }
-                
+        
         /* Modal Styles */
         .modal {
             display: none;
@@ -289,6 +290,9 @@
             .container { padding: 15px; }
             h1 { font-size: 1.6em; }
             .btn { width: 100%; box-sizing: border-box; }
+            .chart-container {
+                height: 400px;
+            }
         }
     </style>
 </head>
@@ -296,6 +300,12 @@
 
     <div class="container">
         <h1>DSQ-60 互動問卷 (七點量表版)</h1>
+
+        <!-- --- MODIFICATION START: Added Test Button --- -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button type="button" id="fill-test-data-btn" class="btn" style="background-color: var(--warning-color); border-color: var(--warning-color);">快速填寫 (測試用)</button>
+        </div>
+        <!-- --- MODIFICATION END --- -->
 
         <div id="personal-info">
             <label for="name">姓名</label>
@@ -374,9 +384,8 @@
     </div>
 
     <script>
-        // --- MODIFICATION START: Updated Question 1 Text ---
         const questions = [
-            { qNum: 1, text: "我從幫助他人中獲得滿足感，如果無法這樣做，我會感到沮喪。" }, // This line has been updated
+            { qNum: 1, text: "我從幫助他人中獲得滿足感，如果無法這樣做，我會感到沮喪。" },
             { qNum: 2, text: "人們常說我會鬧彆扭／生悶氣。" },
             { qNum: 3, text: "我能夠暫時將問題拋諸腦後，直到我有時間處理它為止。" },
             { qNum: 4, text: "我透過做一些有建設性和創造性的事（如繪畫或木工）來排解我的焦慮。" },
@@ -437,7 +446,6 @@
             { qNum: 59, text: "當我有一個具攻擊性的想法時，我覺得有必要做些事情來彌補它。" },
             { qNum: 60, text: "當有令人興奮的事情發生時，我卻傾向於為一些不重要的細節而煩惱。" }
         ];
-        // --- MODIFICATION END ---
 
         const questionMapping = {
             '昇華': { items: [4, 57], style: 'adaptive' },
@@ -533,37 +541,29 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // 保持為水平長條圖
+                    indexAxis: 'y',
                     scales: {
                         x: {
                             beginAtZero: true,
                             max: 7
                         },
-                        // --- MODIFICATION START: 新增 Y 軸標籤設定 ---
                         y: {
                             ticks: {
-                                // autoSkip: false, // 確保所有標籤都顯示
-                                // callback 用於自訂標籤的顯示方式
                                 callback: function(value, index, ticks) {
-                                    // this.getLabelForValue(value) 取得原始標籤文字
                                     const label = this.getLabelForValue(value);
-                                    const maxLength = 5; // 設定每行最大字數
+                                    const maxLength = 5;
 
-                                    // 如果標籤長度超過最大長度，就進行換行處理
                                     if (label.length > maxLength) {
                                         const wrappedLabel = [];
                                         for (let i = 0; i < label.length; i += maxLength) {
                                             wrappedLabel.push(label.substring(i, i + maxLength));
                                         }
-                                        // Chart.js 支援用陣列來顯示多行標籤
                                         return wrappedLabel;
                                     }
-                                    // 如果標籤不長，直接返回
                                     return label;
                                 }
                             }
                         }
-                        // --- MODIFICATION END ---
                     },
                     plugins: {
                         legend: {
@@ -571,8 +571,7 @@
                         }
                     },
                     responsive: true,
-                    // 調整長寬比，給標籤留出更多空間
-                    maintainAspectRatio: false 
+                    maintainAspectRatio: false
                 }
             });
             return charts[canvasId];
@@ -710,7 +709,7 @@
                     <style>${cssText}</style>
                     <style> 
                         body { padding: 20px; background-color: #fff; } 
-                        .export-buttons, #questionnaire-form, .modal, #pdf-cover-page { display: none !important; }
+                        .export-buttons, #questionnaire-form, .modal, #pdf-cover-page, #fill-test-data-btn { display: none !important; }
                         #results { display: block !important; border-top: none; margin-top: 0; padding-top: 0; }
                         .answers-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
                         .answers-table th, .answers-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
@@ -718,6 +717,7 @@
                         .answers-table td:nth-child(1), .answers-table td:nth-child(4) { text-align: center; }
                         .color-legend { border: 1px solid #e0e0e0; padding: 10px; border-radius: 5px; background-color: #f8f9fa;}
                         .color-legend span { padding: 2px 8px; border-radius: 4px; font-weight: 500; margin: 0 4px; display: inline-block;}
+                        .chart-container img { max-width: 100%; height: auto !important; }
                     </style>
                 </head>
                 <body>
@@ -757,19 +757,19 @@
                                 <h3>適應型風格 (Adaptive Style)</h3>
                                 <p>此風格反映出健康、成熟及具建設性的方式來應對壓力、衝突和困難情緒。高分者傾向能靈活處理挑戰，例如尋求支援、制定計劃、運用幽默感，並將精力轉化為有建設性的活動。</p>
                                 <p class="style-score">${adaptiveScore}</p>
-                                <div class="chart-container"><img src="${adaptiveChartImg}" style="width:100%; height:auto;"></div>
+                                <div class="chart-container"><img src="${adaptiveChartImg}"></div>
                             </div>
                             <div class="result-style">
                                 <h3>情感調節型風格 (Affect-Regulating Style)</h3>
                                 <p>此風格透過將困擾的情緒排除在意識之外來進行管理。相關的防衛機制可能包括將感受理智化、與情境保持情感距離，或為衝突作出合理解釋。雖然此風格有時有用，但過度依賴可能會抑制情感表達和自我覺察。</p>
                                 <p class="style-score">${affectScore}</p>
-                                <div class="chart-container"><img src="${affectChartImg}" style="width:100%; height:auto;"></div>
+                                <div class="chart-container"><img src="${affectChartImg}"></div>
                             </div>
                             <div class="result-style">
                                 <h3>影像扭曲型風格 (Image-Distorting Style)</h3>
                                 <p>此風格透過扭曲對自己或他人的看法來處理內心困擾。這可能包括以黑白分明的角度看待人或事（非好即壞）、指責他人或衝動行事。高分者通常與人際關係困難和較無效的應對策略有關。</p>
                                 <p class="style-score">${imageScore}</p>
-                                <div class="chart-container"><img src="${imageChartImg}" style="width:100%; height:auto;"></div>
+                                <div class="chart-container"><img src="${imageChartImg}"></div>
                             </div>
                         </div>
                     </div>
@@ -897,6 +897,28 @@
                 modal.style.display = "none";
             }
         }
+
+        // --- MODIFICATION START: Add Test Button Functionality ---
+        document.getElementById('fill-test-data-btn').addEventListener('click', () => {
+            // Loop through all questions from 1 to 60
+            for (let i = 1; i <= questions.length; i++) {
+                // Find the radio button with value "4" for the current question
+                const radioToSelect = document.querySelector(`input[name="q${i}"][value="4"]`);
+
+                if (radioToSelect) {
+                    // 1. Programmatically check the radio button
+                    radioToSelect.checked = true;
+
+                    // 2. Manually dispatch a 'change' event.
+                    // This is crucial to trigger your existing UI update logic 
+                    // which highlights the selected label with the 'selected' class.
+                    radioToSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+            // Give a confirmation in the console for the developer
+            console.log('All questions have been answered with "4" for testing.');
+        });
+        // --- MODIFICATION END ---
 
     </script>
 </body>
