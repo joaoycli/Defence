@@ -387,19 +387,22 @@
             pdf.save('DSQ-60_多頁報告.pdf');
         });
 
-        // --- UPDATED: HTML Export Logic (with color-coded rows) ---
+        // --- REVISED AND VERIFIED: HTML Export Logic ---
         document.getElementById('export-html-btn').addEventListener('click', () => {
             const name = document.getElementById('name').value || '未提供';
             const date = new Date().toLocaleString('zh-TW', { hour12: false });
 
-            const adaptiveChartImg = charts.adaptive.toBase64Image();
-            const affectChartImg = charts.affectRegulating.toBase64Image();
-            const imageChartImg = charts.imageDistorting.toBase64Image();
+            // Ensure charts have been rendered and get their image data
+            const adaptiveChartImg = charts.adaptive ? charts.adaptive.toBase64Image() : '';
+            const affectChartImg = charts.affectRegulating ? charts.affectRegulating.toBase64Image() : '';
+            const imageChartImg = charts.imageDistorting ? charts.imageDistorting.toBase64Image() : '';
 
+            // Get score text content
             const adaptiveScore = document.getElementById('adaptive-style-score').textContent;
             const affectScore = document.getElementById('affect-regulating-style-score').textContent;
             const imageScore = document.getElementById('image-distorting-style-score').textContent;
             
+            // Create a mapping from question number -> defense name for easy lookup
             const qNumToDefenseMap = {};
             for (const defenseName in questionMapping) {
                 questionMapping[defenseName].items.forEach(qNum => {
@@ -407,22 +410,25 @@
                 });
             }
 
-            // --- NEW: Define colors for table rows based on defense style ---
+            // Define the colors for table rows based on defense style
             const styleToRowColorMap = {
                 adaptive: 'rgba(46, 204, 113, 0.15)',       // Light Green
                 affectRegulating: 'rgba(52, 152, 219, 0.15)', // Light Blue
                 imageDistorting: 'rgba(231, 76, 60, 0.15)'   // Light Red
             };
 
-            // --- NEW: Generate HTML for the detailed answers table with color-coding ---
+            // Generate HTML for the detailed answers table with color-coding
             let answerRowsHtml = '';
             for (let i = 1; i <= questions.length; i++) {
                 const question = questions.find(q => q.qNum === i);
                 const answer = document.querySelector(`input[name="q${i}"]:checked`).value;
-                const defense = qNumToDefenseMap[i];
-                const style = questionMapping[defense].style;
-                const rowColor = styleToRowColorMap[style]; // Get the color for the row
+                
+                // This is the key logic chain to find the correct color
+                const defense = qNumToDefenseMap[i]; // Step 1: Get defense name
+                const style = questionMapping[defense].style; // Step 2: Get style name ('adaptive', etc.)
+                const rowColor = styleToRowColorMap[style]; // Step 3: Get RGBA color string
 
+                // The 'style' attribute is added directly to the <tr> element
                 answerRowsHtml += `
                     <tr style="background-color: ${rowColor};">
                         <td>${question.qNum}</td>
@@ -433,13 +439,15 @@
                 `;
             }
 
+            // Capture all CSS from the page to include in the report
             let cssText = '';
             for (let sheet of document.styleSheets) {
                 try {
                     for (let rule of sheet.cssRules) { cssText += rule.cssText; }
-                } catch (e) { console.warn("Could not read CSS rule:", e); }
+                } catch (e) { console.warn("Could not read CSS rule due to security policy. This is usually expected for external stylesheets.", e); }
             }
 
+            // Assemble the final HTML content for the export file
             const htmlContent = `
                 <!DOCTYPE html>
                 <html lang="zh-Hant">
@@ -449,16 +457,15 @@
                     <title>DSQ-60 結果報告 - ${name}</title>
                     <style>${cssText}</style>
                     <style> 
-                        body { padding: 20px; } 
+                        body { padding: 20px; background-color: #fff; } 
                         .export-buttons, #questionnaire-form, .modal, #pdf-cover-page { display: none !important; }
                         #results { display: block !important; border-top: none; margin-top: 0; padding-top: 0; }
                         .answers-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
                         .answers-table th, .answers-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
                         .answers-table th { background-color: #f8f9fa; font-weight: bold; }
-                        /* The inline style on <tr> will override this, which is intended */
-                        .answers-table tr:nth-child(even) { background-color: #fdfdfd; }
                         .answers-table td:nth-child(1), .answers-table td:nth-child(4) { text-align: center; }
-                        .color-legend span { padding: 2px 6px; border-radius: 4px; font-weight: 500;}
+                        .color-legend { border: 1px solid #e0e0e0; padding: 10px; border-radius: 5px; background-color: #f8f9fa;}
+                        .color-legend span { padding: 2px 8px; border-radius: 4px; font-weight: 500; margin: 0 4px; display: inline-block;}
                     </style>
                 </head>
                 <body>
@@ -470,12 +477,11 @@
 
                         <div id="detailed-answers">
                             <h2>問卷作答詳情</h2>
-                            <!-- NEW: Legend for row colors -->
                             <p class="color-legend">
-                                下表中的每一行都根據其所屬的防衛風格進行了顏色標記：
-                                <span style="background-color: ${styleToRowColorMap.adaptive};">適應型</span>, 
-                                <span style="background-color: ${styleToRowColorMap.affectRegulating};">情感調節型</span>, 
-                                <span style="background-color: ${styleToRowColorMap.imageDistorting};">影像扭曲型</span>。
+                                每一行都根據其所屬的防衛風格進行了顏色標記：
+                                <span style="background-color: ${styleToRowColorMap.adaptive};">適應型</span>
+                                <span style="background-color: ${styleToRowColorMap.affectRegulating};">情感調節型</span>
+                                <span style="background-color: ${styleToRowColorMap.imageDistorting};">影像扭曲型</span>
                             </p>
                             <table class="answers-table">
                                 <thead>
@@ -497,19 +503,19 @@
                             <h2>結果總覽</h2>
                             <div class="result-style">
                                 <h3>適應型風格 (Adaptive Style)</h3>
-                                <p>此風格反映出健康、成熟及具建設性的方式來應對壓力、衝突和困難情緒...</p>
+                                <p>此風格反映出健康、成熟及具建設性的方式來應對壓力、衝突和困難情緒。高分者傾向能靈活處理挑戰，例如尋求支援、制定計劃、運用幽默感，並將精力轉化為有建設性的活動。</p>
                                 <p class="style-score">${adaptiveScore}</p>
                                 <div class="chart-container"><img src="${adaptiveChartImg}" style="width:100%; height:auto;"></div>
                             </div>
                             <div class="result-style">
                                 <h3>情感調節型風格 (Affect-Regulating Style)</h3>
-                                <p>此風格透過將困擾的情緒排除在意識之外來進行管理...</p>
+                                <p>此風格透過將困擾的情緒排除在意識之外來進行管理。相關的防衛機制可能包括將感受理智化、與情境保持情感距離，或為衝突作出合理解釋。雖然此風格有有用，但過度依賴可能會抑制情感表達和自我覺察。</p>
                                 <p class="style-score">${affectScore}</p>
                                 <div class="chart-container"><img src="${affectChartImg}" style="width:100%; height:auto;"></div>
                             </div>
                             <div class="result-style">
                                 <h3>影像扭曲型風格 (Image-Distorting Style)</h3>
-                                <p>此風格透過扭曲對自己或他人的看法來處理內心困擾...</p>
+                                <p>此風格透過扭曲對自己或他人的看法來處理內心困擾。這可能包括以黑白分明的角度看待人或事（非好即壞）、指責他人或衝動行事。高分者通常與人際關係困難和較無效的應對策略有關。</p>
                                 <p class="style-score">${imageScore}</p>
                                 <div class="chart-container"><img src="${imageChartImg}" style="width:100%; height:auto;"></div>
                             </div>
@@ -523,7 +529,9 @@
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = 'DSQ-60_完整報告.html';
+            document.body.appendChild(a); // Append to body to ensure it's clickable in all browsers
             a.click();
+            document.body.removeChild(a); // Clean up
             URL.revokeObjectURL(a.href);
         });
     </script>
