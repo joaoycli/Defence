@@ -524,7 +524,20 @@
         const charts = {};
 
         function createChart(canvasId, label, data, backgroundColor, borderColor) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            // --- MODIFICATION START: Dynamic Height and Disabling autoSkip ---
+            const canvas = document.getElementById(canvasId);
+            const container = canvas.parentElement;
+            
+            // 1. Calculate the dynamic height for the chart container.
+            // We'll allocate about 25px per bar, plus 60px for padding/margins.
+            const numBars = data.length;
+            const calculatedHeight = numBars * 25 + 60;
+            
+            // 2. Ensure the chart is not smaller than the original minimum height of 350px.
+            const newHeight = Math.max(350, calculatedHeight);
+            container.style.height = `${newHeight}px`;
+
+            const ctx = canvas.getContext('2d');
             if (charts[canvasId]) {
                 charts[canvasId].destroy();
             }
@@ -549,6 +562,8 @@
                         },
                         y: {
                             ticks: {
+                                // 3. Explicitly disable auto-skipping of labels.
+                                autoSkip: false,
                                 callback: function(value, index, ticks) {
                                     const label = this.getLabelForValue(value);
                                     const maxLength = 5;
@@ -574,6 +589,7 @@
                     maintainAspectRatio: false
                 }
             });
+            // --- MODIFICATION END ---
             return charts[canvasId];
         }
 
