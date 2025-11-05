@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSQ-60 互動問卷 (七點量表版)</title>
@@ -112,35 +114,32 @@
             margin-bottom: 15px;
         }
 
-        /* --- MODIFICATION START: Compact Radio Buttons --- */
         .options-container {
-            display: flex; /* Use Flexbox for layout */
-            justify-content: space-between; /* Distribute space between items */
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             width: 100%;
         }
 
         .options-container label {
-            flex: 1; /* Each label takes up equal space */
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 8px 2px; /* Reduced horizontal padding */
-            margin: 0 1px; /* Reduced margin */
+            padding: 8px 2px;
+            margin: 0 1px;
             border: 1px solid var(--border-color);
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
             font-weight: bold;
-            min-width: 30px; /* Minimum width to prevent over-shrinking */
+            min-width: 30px;
         }
-        /* --- MODIFICATION END --- */
 
         .options-container input[type="radio"] {
             margin-bottom: 5px;
-            /* Modern browsers allow accent-color to style radio buttons */
             accent-color: var(--primary-color); 
         }
 
@@ -292,7 +291,7 @@
             .btn { width: 100%; box-sizing: border-box; }
         }
     </style>
-<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.3f7572448765332f3047.js"></script></head>
+</head>
 <body>
 
     <div class="container">
@@ -360,7 +359,7 @@
     <!-- Modal for PDF generation progress -->
     <div id="pdf-progress-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn">×</span>
+            <span class="close-btn">&times;</span>
             <h3>正在產生PDF報告...</h3>
             <p>這可能需要幾秒鐘的時間，請稍候。</p>
             <p id="pdf-progress-text">準備中...</p>
@@ -375,68 +374,70 @@
     </div>
 
     <script>
+        // --- MODIFICATION START: Updated Question 1 Text ---
         const questions = [
-            { qNum: 1, text: "當我幫助別人時，我感到滿足；如果不能這樣做，我會感到沮喪。" },
-            { qNum: 2, text: "人們常說我悶悶不樂、沉默寡言。" },
-            { qNum: 3, text: "我可以暫時不去想某個問題，直到我有時間去處理它。" },
-            { qNum: 4, text: "我透過從事繪畫或木工等有建設性和創造性的活動來控制我的焦慮。" },
-            { qNum: 5, text: "我對人的看法經常改變；有時我對他們評價很高，有時又覺得他們一文不值。" },
-            { qNum: 6, text: "我能為我做的任何事找到充分的理由。" },
-            { qNum: 7, text: "我可以很輕易地嘲笑自己。" },
-            { qNum: 8, text: "人們似乎傾向於不公平地對待我。" },
-            { qNum: 9, text: "如果有人攻擊我並搶走我的錢，我寧願他得到幫助而不是懲罰。" },
-            { qNum: 10, text: "如果我與某人發生衝突，我會試著去思考我在這場衝突中可能有什麼責任。" },
+            { qNum: 1, text: "我從幫助他人中獲得滿足感，如果無法這樣做，我會感到沮喪。" }, // This line has been updated
+            { qNum: 2, text: "人們常說我會鬧彆扭／生悶氣。" },
+            { qNum: 3, text: "我能夠暫時將問題拋諸腦後，直到我有時間處理它為止。" },
+            { qNum: 4, text: "我透過做一些有建設性和創造性的事（如繪畫或木工）來排解我的焦慮。" },
+            { qNum: 5, text: "我對人的看法經常改變；一時之間我會高度評價他們，另一時間我又覺得他們一文不值。" },
+            { qNum: 6, text: "我總能為自己做的每件事找到合理的理由。" },
+            { qNum: 7, text: "我能夠輕易地自嘲。" },
+            { qNum: 8, text: "我覺得人們傾向於虧待我。" },
+            { qNum: 9, text: "如果有人搶劫並偷了我的錢，我寧願他得到幫助而不是懲罰。" },
+            { qNum: 10, text: "当我與人發生衝突時，我會嘗試思考自己在哪方面有責任。" },
             { qNum: 11, text: "人們說我傾向於忽略不愉快的事實，彷彿它們不存在一樣。" },
-            { qNum: 12, text: "我常常感到自己比周遭的人優越。" },
+            { qNum: 12, text: "我時常覺得自己比身邊的人優越。" },
             { qNum: 13, text: "有人正在情感上榨乾我的一切。" },
-            { qNum: 14, text: "當有真正的危險時，我感覺好像自己不在那裡，而且我不害怕。" },
-            { qNum: 15, text: "如果我受到不公平的對待，我會為自己的權利挺身而出。" },
-            { qNum: 16, text: "我處理危險時，就像我是超人/擁有超能力一樣。" },
-            { qNum: 17, text: "我為自己能把人打回原形的能力感到自豪。" },
-            { qNum: 18, text: "當有事情困擾我時，我經常會衝動行事。" },
-            { qNum: 19, text: "事實上，我相當沒有價值。" },
-            { qNum: 20, text: "當我與人打交道時，他們常常最終感受到我的感受。" },
-            { qNum: 21, text: "我從我的幻想中得到的滿足感比從我的現實生活中得到的更多。" },
-            { qNum: 22, text: "當我難過時，我會退縮。" },
-            { qNum: 23, text: "當我遇到困難時，我常常感到不真實。" },
-            { qNum: 24, text: "我有特殊才能，讓我可以毫無問題地度過一生。" },
+            { qNum: 14, text: "當遇到真正的危險時，我彷彿置身事外，感覺不到恐懼。" },
+            { qNum: 15, text: "如果我受到不公平對待，我會挺身而出捍衛自己的權利。" },
+            { qNum: 16, text: "我應對危險時，就像自己是超人一樣。" },
+            { qNum: 17, text: "我為自己能夠挫他人的銳氣而感到自豪。" },
+            { qNum: 18, text: "當有事情困擾我時，我常常會衝動行事。" },
+            { qNum: 19, text: "事實上，我頗沒有價值。" },
+            { qNum: 20, text: "與人相處時，他們最終往往會感受到我的感受。" },
+            { qNum: 21, text: "我從幻想中得到的滿足感比從現實生活中得到的更多。" },
+            { qNum: 22, text: "當我生氣時，我會選擇退縮。" },
+            { qNum: 23, text: "當我身處困境時，我時常感到不真實。" },
+            { qNum: 24, text: "我擁有特殊才能，讓我可以毫無問題地度過一生。" },
             { qNum: 25, text: "我寧願談論抽象的事情，也不願談論我的感受。" },
-            { qNum: 26, text: "當事情不順利時，總是有充分的理由。" },
-            { qNum: 27, text: "我透過白日夢完成的事情比在現實生活中更多。" },
-            { qNum: 28, text: "當人們對我生氣時，我傾向於認為他們反應過度了。" },
-            { qNum: 29, text: "有時我認為自己是個天使，有時我認為自己非常壞。" },
-            { qNum: 30, text: "如果有人讓我生氣，我傾向於對一些我通常會忽略的事情感到煩惱。" },
-            { qNum: 31, text: "當我感到受傷時，我會變得公然具有攻擊性。" },
-            { qNum: 32, text: "我不太記得我的小學時光。" },
-            { qNum: 33, text: "當我悲傷時，我會退縮。" },
-            { qNum: 34, text: "我總覺得我認識的某個人是我的守護天使。" },
-            { qNum: 35, text: "我通常比人們想像的要糟糕。" },
+            { qNum: 26, text: "當事情不順利時，總是有很好的理由可以解釋。" },
+            { qNum: 27, text: "我在白日夢中解決的事情比在現實生活中更多。" },
+            { qNum: 28, text: "當別人生我的氣時，我傾向於認為他們小題大作。" },
+            { qNum: 29, text: "有時我覺得自己是天使，有時又覺得自己是魔鬼。" },
+            { qNum: 30, text: "如果有人對我生氣，我會因為一些平常不在意的事情而感到煩惱。" },
+            { qNum: 31, text: "當我感到受傷時，我會變得公然地具攻擊性。" },
+            { qNum: 32, text: "我幾乎不記得任何關於我早年上學的事情。" },
+            { qNum: 33, text: "當我悲傷時，我會選擇退縮。" },
+            { qNum: 34, text: "我總覺得我認識的某個人就像一位守護天使。" },
+            { qNum: 35, text: "事實上，我比人們想像的還要差。" },
             { qNum: 36, text: "對我來說，人要麼是好人，要麼是壞人。" },
-            { qNum: 37, text: "如果我的老闆讓我生氣，我可能會在工作上犯錯或故意放慢速度來報復。" },
-            { qNum: 38, text: "我認識的某個人可以做任何事，並且絕對公平正直。" },
-            { qNum: 39, text: "如果我經歷了不愉快的事情，第二天有時會忘記那是什麼事。" },
-            { qNum: 40, text: "幫助別人讓我感覺很好。" },
-            { qNum: 41, text: "如果表露情緒會干擾我正在做的事，我可以控制住我的情緒。" },
-            { qNum: 42, text: "我通常能看到一個原本嚴肅情況下的幽默面。" },
-            { qNum: 43, text: "我常常發現自己對那些我理應生氣的人非常友善。" },
-            { qNum: 44, text: "沒有所謂「在每個人身上找到優點」這回事；如果你壞，你就是徹頭徹尾的壞。" },
-            { qNum: 45, text: "當我做的事情不順利時，我會試著找出我忽略了什麼。" },
-            { qNum: 46, text: "人們傾向於對我不誠實或不公平。" },
-            { qNum: 47, text: "如果我必須面對一個困難情況時，我會試著想像它會是什麼樣子，並計畫應對的方法。" },
-            { qNum: 48, text: "醫生似乎從來都無法完全理解我的問題。" },
-            { qNum: 49, text: "在為自己的權利奮鬥後，我傾向於為自己的強勢道歉。" },
-            { qNum: 50, text: "如果有人惹惱我，我會告訴他們，而不會傷害他們。" },
-            { qNum: 51, text: "人們常告訴我，我不表露我的感受。" },
-            { qNum: 52, text: "當我感覺不好時，我喜歡和某人在一起。" },
-            { qNum: 53, text: "如果我能預見到我將會感到難過，我就能更好地應對這種情況。" },
-            { qNum: 54, text: "無論我怎麼抱怨，我都得不到別人滿意的回應。" },
-            { qNum: 55, text: "我不直接說出我的感受，而是詳細地解釋我的想法。" },
-            { qNum: 56, text: "當我感到情緒激動的事情時，我卻沒有任何感覺。" },
-            { qNum: 57, text: "當我感到沮喪或焦慮時，我喜歡投入一項創造性或體能活動。" },
-            { qNum: 58, text: "如果我陷入危機，我會找人傾訴我的煩惱。" },
-            { qNum: 59, text: "如果我有一個攻擊性的想法，我會感到需要做些什麼來彌補它。" },
-            { qNum: 60, text: "當發生情緒激動的事情時，我傾向於關注不重要的細節。" }
+            { qNum: 37, text: "如果我的上司惹惱我，我可能會在工作中犯錯或故意放慢工作速度來報復他。" },
+            { qNum: 38, text: "我認識一個人，他無所不能，而且絕對公平公正。" },
+            { qNum: 39, text: "如果我經歷了不愉快的事情，第二天有時我會忘記那是什麼事。" },
+            { qNum: 40, text: "幫助他人讓我感覺良好。" },
+            { qNum: 41, text: "如果表達感受會干擾我正在做的事，我能夠抑制自己的情緒。" },
+            { qNum: 42, text: "在痛苦的困境中，我通常能看到其中有趣的一面。" },
+            { qNum: 43, text: "我常常發現自己對那些理應讓我生氣的人非常友善。" },
+            { qNum: 44, text: "沒有「在每個人身上找到一點好處」這回事，如果你是壞人，你就是徹頭徹尾的壞人。" },
+            { qNum: 45, text: "當我做的事情結果不佳時，我會試圖找出我可能忽略了什麼。" },
+            { qNum: 46, text: "我覺得人們傾向於對我不誠實。" },
+            { qNum: 47, text: "當我必須面對困難情況時，我會嘗試想像那會是怎樣的，並計劃應對方法。" },
+            { qNum: 48, text: "醫生從來沒有真正了解我的問題出在哪裡。" },
+            { qNum: 49, text: "在我為自己的權利抗爭後，我傾向於為自己的堅定立場道歉。" },
+            { qNum: 50, text: "如果有人惹惱我，我會告訴他們，但不會傷害他們的感情。" },
+            { qNum: 51, text: "我經常被告知我不表露自己的感受。" },
+            { qNum: 52, text: "當我心情不好時，我會想和別人在一起。" },
+            { qNum: 53, text: "如果我能預先知道自己將會難過，我就能更好地應對。" },
+            { qNum: 54, text: "無論我怎樣投訴，都從未得到滿意的回應。" },
+            { qNum: 55, text: "我不會直接說出我的感受，而是會詳細地解釋我的想法。" },
+            { qNum: 56, text: "在理應有強烈情緒反應的情況下，我常常發現自己沒有任何感覺。" },
+            { qNum: 57, text: "當我感到沮喪或焦慮時，我喜歡從事一些創造性或體能活動。" },
+            { qNum: 58, text: "如果我陷入危機，我會找人傾訴我的憂慮。" },
+            { qNum: 59, text: "當我有一個具攻擊性的想法時，我覺得有必要做些事情來彌補它。" },
+            { qNum: 60, text: "當有令人興奮的事情發生時，我卻傾向於為一些不重要的細節而煩惱。" }
         ];
+        // --- MODIFICATION END ---
 
         const questionMapping = {
             '昇華': { items: [4, 57], style: 'adaptive' },
@@ -496,18 +497,14 @@
             questionList.appendChild(item);
         });
         
-        // Add event listener for styling selected radio buttons
         questionList.addEventListener('change', (e) => {
             if (e.target.type === 'radio') {
                 const container = e.target.closest('.options-container');
-                // Remove 'selected' class from all labels in the same group
                 container.querySelectorAll('label').forEach(label => {
                     label.classList.remove('selected');
                 });
-                // Add 'selected' class to the parent label of the checked radio
                 e.target.parentElement.classList.add('selected');
                 
-                // Remove unanswered warning if present
                 const questionItem = e.target.closest('.question-item');
                 if (questionItem.classList.contains('unanswered')) {
                     questionItem.classList.remove('unanswered');
@@ -626,22 +623,18 @@
             window.scrollTo({ top: document.getElementById('results').offsetTop, behavior: 'smooth' });
         });
         
-        // --- REVISED AND VERIFIED: HTML Export Logic ---
         document.getElementById('export-html-btn').addEventListener('click', () => {
             const name = document.getElementById('name').value || '未提供';
             const date = new Date().toLocaleString('zh-TW', { hour12: false });
 
-            // Ensure charts have been rendered and get their image data
             const adaptiveChartImg = charts.adaptive ? charts.adaptive.toBase64Image() : '';
             const affectChartImg = charts.affectRegulating ? charts.affectRegulating.toBase64Image() : '';
             const imageChartImg = charts.imageDistorting ? charts.imageDistorting.toBase64Image() : '';
 
-            // Get score text content
             const adaptiveScore = document.getElementById('adaptive-style-score').textContent;
             const affectScore = document.getElementById('affect-regulating-style-score').textContent;
             const imageScore = document.getElementById('image-distorting-style-score').textContent;
             
-            // Create a mapping from question number -> defense name for easy lookup
             const qNumToDefenseMap = {};
             for (const defenseName in questionMapping) {
                 questionMapping[defenseName].items.forEach(qNum => {
@@ -649,25 +642,21 @@
                 });
             }
 
-            // Define the colors for table rows based on defense style
             const styleToRowColorMap = {
-                adaptive: 'rgba(46, 204, 113, 0.15)',       // Light Green
-                affectRegulating: 'rgba(52, 152, 219, 0.15)', // Light Blue
-                imageDistorting: 'rgba(231, 76, 60, 0.15)'   // Light Red
+                adaptive: 'rgba(46, 204, 113, 0.15)',
+                affectRegulating: 'rgba(52, 152, 219, 0.15)',
+                imageDistorting: 'rgba(231, 76, 60, 0.15)'
             };
 
-            // Generate HTML for the detailed answers table with color-coding
             let answerRowsHtml = '';
             for (let i = 1; i <= questions.length; i++) {
                 const question = questions.find(q => q.qNum === i);
                 const answer = document.querySelector(`input[name="q${i}"]:checked`).value;
                 
-                // This is the key logic chain to find the correct color
-                const defense = qNumToDefenseMap[i]; // Step 1: Get defense name
-                const style = questionMapping[defense].style; // Step 2: Get style name ('adaptive', etc.)
-                const rowColor = styleToRowColorMap[style]; // Step 3: Get RGBA color string
+                const defense = qNumToDefenseMap[i];
+                const style = questionMapping[defense].style;
+                const rowColor = styleToRowColorMap[style];
 
-                // The 'style' attribute is added directly to the <tr> element
                 answerRowsHtml += `
                     <tr style="background-color: ${rowColor};">
                         <td>${question.qNum}</td>
@@ -678,15 +667,13 @@
                 `;
             }
 
-            // Capture all CSS from the page to include in the report
             let cssText = '';
             for (let sheet of document.styleSheets) {
                 try {
                     for (let rule of sheet.cssRules) { cssText += rule.cssText; }
-                } catch (e) { console.warn("Could not read CSS rule due to security policy. This is usually expected for external stylesheets.", e); }
+                } catch (e) { console.warn("Could not read CSS rule due to security policy.", e); }
             }
 
-            // Assemble the final HTML content for the export file
             const htmlContent = `
                 <!DOCTYPE html>
                 <html lang="zh-Hant">
@@ -774,7 +761,6 @@
             URL.revokeObjectURL(a.href);
         });
         
-        // PDF Export Logic
         const { jsPDF } = window.jspdf;
 
         document.getElementById('export-pdf-btn').addEventListener('click', async () => {
@@ -789,14 +775,9 @@
                     format: 'a4'
                 });
                 
-                // Add custom font for Chinese characters
-                // Note: This is a simplified approach. For full support, a proper font file is needed.
-                // We will rely on the browser's rendering via html2canvas.
-                
                 const name = document.getElementById('name').value || '未提供';
                 const date = new Date().toLocaleString('zh-TW', { hour12: false });
                 
-                // --- 1. Create Cover Page ---
                 progressText.textContent = '正在產生封面... (1/3)';
                 document.getElementById('pdf-cover-name').textContent = `姓名: ${name}`;
                 document.getElementById('pdf-cover-date').textContent = `完成日期: ${date}`;
@@ -810,19 +791,15 @@
                 doc.addImage(coverImgData, 'PNG', 0, 0, pageWidth, pageHeight);
                 coverPage.style.display = 'none';
 
-                // --- 2. Create Detailed Answers Page ---
                 progressText.textContent = '正在產生作答詳情... (2/3)';
                 doc.addPage();
                 
-                // We create a temporary, full-page-width table for rendering
                 const tempTableContainer = document.createElement('div');
                 tempTableContainer.style.position = 'absolute';
                 tempTableContainer.style.left = '-9999px';
-                tempTableContainer.style.width = '800px'; // A fixed width for consistent rendering
-                tempTableContainer.innerHTML = document.getElementById('export-html-btn').dispatchEvent(new Event('click', {bubbles: true, cancelable: true}));
+                tempTableContainer.style.width = '800px';
                 
                 const htmlContent = (await (async () => {
-                    // Re-run the HTML export logic to get the content string
                     const qNumToDefenseMap = {};
                     for (const defenseName in questionMapping) {
                         questionMapping[defenseName].items.forEach(qNum => {
@@ -859,16 +836,15 @@
                     windowWidth: 800
                 });
 
-                // --- 3. Create Results and Charts Page ---
                 progressText.textContent = '正在產生結果圖表... (3/3)';
                 doc.addPage();
                 const resultsElement = document.getElementById('results');
                 const originalDisplay = resultsElement.style.display;
-                resultsElement.style.display = 'block'; // Make sure it's visible for rendering
+                resultsElement.style.display = 'block';
                 
                 await doc.html(resultsElement, {
                     callback: function (doc) {
-                        resultsElement.style.display = originalDisplay; // Restore original display
+                        resultsElement.style.display = originalDisplay;
                         progressText.textContent = '完成！';
                         setTimeout(() => { modal.style.display = 'none'; }, 1000);
                         doc.save(`DSQ-60_報告_${name.replace(/\s+/g, '_')}.pdf`);
@@ -897,6 +873,5 @@
         }
 
     </script>
-
-
-</body></html>
+</body>
+</html>
